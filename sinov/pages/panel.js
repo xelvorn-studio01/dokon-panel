@@ -4,6 +4,7 @@
 //    .../dokon-panel/?bolim=panel&dokon=ID&api=URL
 //  Ma'lumot App.api("men") orqali keladi - bot Telegram imzosini tekshirib, kimligingizni aniqlaydi.
 //  Bo'limlar keyingi qadamlarda birin-ketin yoqiladi. v12: 📊 Excel yuklash yoqildi (pages/import.js).
+//  v13: 📦 Qoldiq, ✏️ Narx (pages/tovar.js), 🧾 Hisobot (pages/hisobot.js) yoqildi.
 // ============================================================
 (function () {
   var ERR = {
@@ -23,9 +24,9 @@
   // Keyingi qadamlarda shu yerga bo'limlar qo'shiladi (on: true bo'lganda bosiladi)
   var SECTIONS = [
     { key: "import", icon: "📊", title: "Excel yuklash",  on: true },  // v12,
-    { key: "qoldiq", icon: "📦", title: "Qoldiq",         on: false },
-    { key: "narx",   icon: "✏️", title: "Narx",           on: false },
-    { key: "hisobot", icon: "🧾", title: "Hisobot",       on: false }
+    { key: "qoldiq", icon: "📦", title: "Qoldiq",         on: true },  // v13
+    { key: "narx",   icon: "✏️", title: "Narx",           on: true },  // v13
+    { key: "hisobot", icon: "🧾", title: "Hisobot",       on: true }   // v13
   ];
 
   var root = null;

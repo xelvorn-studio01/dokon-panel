@@ -106,3 +106,32 @@ details summary { cursor: pointer; }
 /* v12: kartochka ichidagi ikkinchi darajali tugmalar fon bilan qo'shilib ketmasin */
 .card .btn.secondary { background: var(--bg); border: 1px solid rgba(128,128,128,.25); }
 .card .btn.sel { background: var(--btn); color: var(--btn-text); border-color: var(--btn); }
+
+/* v13: 📦 Qoldiq, ✏️ Narx */
+.tv-sum { margin: 0 0 8px; }
+.tv-chips, .hs-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.tv-chip { font-size: 14px; padding: 7px 12px; border: 1px solid rgba(128,128,128,.25); border-radius: 18px;
+           background: var(--card); color: var(--text); cursor: pointer; }
+.tv-chip.sel { background: var(--btn); color: var(--btn-text); border-color: var(--btn); }
+.tv-search { margin-bottom: 10px; }
+.tv-list { display: flex; flex-direction: column; gap: 4px; }
+.tv-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; width: 100%; text-align: left;
+           font-size: 15px; padding: 10px 12px; border: 0; border-radius: 8px; background: var(--card); color: var(--text); cursor: pointer; }
+.tv-name { min-width: 0; overflow-wrap: anywhere; }
+.tv-name .small { display: block; }
+.tv-val { white-space: nowrap; text-align: right; }
+.tv-warn { color: #d98a00; }
+.tv-red { color: var(--err); }
+.tv-empty { text-align: center; margin: 12px 0; }
+.tv-flash { margin-bottom: 10px; border-left: 4px solid var(--ok); }
+.tv-ename { font-weight: 700; font-size: 17px; margin-bottom: 2px; }
+.tv-ops { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; margin-top: 8px; }
+.tv-ops .btn { padding: 12px 4px; font-size: 15px; }
+.btn:disabled { opacity: .5; }
+/* v13: 🧾 Hisobot */
+.hs-notes { line-height: 1.5; margin-bottom: 4px; }
+.hs-top { margin-top: 6px; }
+.hs-row { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px solid rgba(128,128,128,.15); }
+.hs-n { min-width: 0; overflow-wrap: anywhere; }
+.hs-n .small { display: block; }
+.hs-s { white-space: nowrap; }

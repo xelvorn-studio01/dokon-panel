@@ -7,13 +7,14 @@
 //  Eslatma: #... (hash) ishlatilmaydi - Telegram unga o'z ma'lumotini yozadi.
 // ============================================================
 (function () {
-  var VERSION = "2-s9d"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
+  var VERSION = "4-s11"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
 
   // ===== BO'LIMLAR RO'YXATI =====
   // Yangi bo'lim qo'shish: pages/nom.js yarating va shu yerga bir qator yozing.
   var PAGES = {
     skaner: { title: "Skaner", icon: "📷", file: "pages/skaner.js" },
-    savat:  { title: "Sotuv",  icon: "🛒", file: "pages/savat.js" }  // faqat botdagi 🛒 Sotuv tugmasi orqali ishlaydi
+    savat:  { title: "Sotuv",  icon: "🛒", file: "pages/savat.js" },  // faqat botdagi 🛒 Sotuv tugmasi orqali ishlaydi
+    panel:  { title: "Panel",  icon: "🏪", file: "pages/panel.js" }   // v11: botdagi 🏪 Panel (inline tugma) orqali
     // kassa:   { title: "Kassa",     icon: "💰", file: "pages/kassa.js" },
     // muddat:  { title: "Muddatlar", icon: "⏰", file: "pages/muddat.js" },
     // qidiruv: { title: "Qidiruv",   icon: "🔎", file: "pages/qidiruv.js" },
@@ -61,6 +62,21 @@
       if (!App.inTelegram) return false;
       tg.sendData(JSON.stringify(obj));
       return true;
+    },
+
+    // v11: bot API'siga so'rov (doPost ?api=panel). Har so'rovda Telegram imzolagan initData ketadi -
+    // bot kimligingizni shundan biladi. Manzil faqat script.google.com bo'lishi mumkin.
+    api: function (action, extra) {
+      var q = new URLSearchParams(location.search);
+      var url = q.get("api") || "", dokon = q.get("dokon") || "";
+      if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(url) || !dokon)
+        return Promise.resolve({ ok: false, err: "manzil" });
+      var body = { a: action, dokon: dokon, init: tg ? tg.initData : "" };
+      if (extra) Object.keys(extra).forEach(function (k) { body[k] = extra[k]; });
+      // Content-Type yozilmaydi (text/plain) - shunda brauzer CORS oldindan so'rovini yubormaydi
+      return fetch(url + "?api=panel", { method: "POST", body: JSON.stringify(body) })
+        .then(function (r) { return r.json(); })
+        .catch(function () { return { ok: false, err: "tarmoq" }; });
     },
 
     esc: function (s) {

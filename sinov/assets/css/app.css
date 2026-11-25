@@ -68,3 +68,16 @@ input.field { width: 100%; font-size: 17px; padding: 10px; border: 1px solid #cc
           background: var(--card); color: var(--text); cursor: pointer; }
 .sv-hit b { white-space: nowrap; }
 .sv-nohit { margin: 2px 4px; }
+
+/* v11: 🏪 Panel bosh sahifasi */
+.pn-head { margin-bottom: 12px; }
+.pn-head h1 { margin-bottom: 2px; }
+.pn-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+.pn-stat .lbl { font-size: 13px; color: var(--hint); }
+.pn-stat .val { font-size: 20px; font-weight: 700; margin-top: 2px; }
+.pn-stat .sub { font-size: 13px; color: var(--hint); margin-top: 2px; }
+.pn-stat.wide { grid-column: 1 / -1; }
+.pn-warn .val { color: var(--err); }
+.menu a.off { opacity: .45; pointer-events: none; }
+.menu a .soon { display: block; font-size: 12px; font-weight: 400; color: var(--hint); margin-top: 2px; }
+.pn-foot { margin-top: 16px; text-align: center; }

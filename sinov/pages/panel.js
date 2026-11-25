@@ -3,7 +3,7 @@
 //  Botdagi "🏪 Panel" -> "🏪 Panelni ochish" (inline tugma) orqali ochiladi:
 //    .../dokon-panel/?bolim=panel&dokon=ID&api=URL
 //  Ma'lumot App.api("men") orqali keladi - bot Telegram imzosini tekshirib, kimligingizni aniqlaydi.
-//  Bo'limlar keyingi qadamlarda birin-ketin yoqiladi (hozircha "tez orada").
+//  Bo'limlar keyingi qadamlarda birin-ketin yoqiladi. v12: 📊 Excel yuklash yoqildi (pages/import.js).
 // ============================================================
 (function () {
   var ERR = {
@@ -22,7 +22,7 @@
 
   // Keyingi qadamlarda shu yerga bo'limlar qo'shiladi (on: true bo'lganda bosiladi)
   var SECTIONS = [
-    { key: "import", icon: "📊", title: "Excel yuklash",  on: false },
+    { key: "import", icon: "📊", title: "Excel yuklash",  on: true },  // v12,
     { key: "qoldiq", icon: "📦", title: "Qoldiq",         on: false },
     { key: "narx",   icon: "✏️", title: "Narx",           on: false },
     { key: "hisobot", icon: "🧾", title: "Hisobot",       on: false }
@@ -78,6 +78,13 @@
       '<p class="muted small">Panel v' + App.esc(App.version) + " · bot v" + App.esc(r.v) + "</p></div>";
     root.innerHTML = html;
     root.querySelector("#pn-reload").addEventListener("click", load);
+    // v12: yoqilgan bo'limlar ochiladi (Telegram "Orqaga" tugmasi panelga qaytaradi)
+    root.querySelectorAll(".menu a[data-sec]").forEach(function (a) {
+      a.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (!a.classList.contains("off")) App.open(a.getAttribute("data-sec"));
+      });
+    });
   }
 
   function load() {

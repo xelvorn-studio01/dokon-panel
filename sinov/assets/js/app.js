@@ -7,14 +7,15 @@
 //  Eslatma: #... (hash) ishlatilmaydi - Telegram unga o'z ma'lumotini yozadi.
 // ============================================================
 (function () {
-  var VERSION = "4-s11"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
+  var VERSION = "5-s12"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
 
   // ===== BO'LIMLAR RO'YXATI =====
   // Yangi bo'lim qo'shish: pages/nom.js yarating va shu yerga bir qator yozing.
   var PAGES = {
     skaner: { title: "Skaner", icon: "📷", file: "pages/skaner.js" },
     savat:  { title: "Sotuv",  icon: "🛒", file: "pages/savat.js" },  // faqat botdagi 🛒 Sotuv tugmasi orqali ishlaydi
-    panel:  { title: "Panel",  icon: "🏪", file: "pages/panel.js" }   // v11: botdagi 🏪 Panel (inline tugma) orqali
+    panel:  { title: "Panel",  icon: "🏪", file: "pages/panel.js" },  // v11: botdagi 🏪 Panel (inline tugma) orqali
+    import: { title: "Excel yuklash", icon: "📊", file: "pages/import.js" } // v12: panel ichidan ochiladi
     // kassa:   { title: "Kassa",     icon: "💰", file: "pages/kassa.js" },
     // muddat:  { title: "Muddatlar", icon: "⏰", file: "pages/muddat.js" },
     // qidiruv: { title: "Qidiruv",   icon: "🔎", file: "pages/qidiruv.js" },
@@ -125,7 +126,10 @@
   if (tg) {
     tg.ready();
     tg.expand();
-    if (tg.BackButton) tg.BackButton.onClick(function () { App.open(null); });
+    // v12: panel ichidan ochilgan bo'limdan "Orqaga" - panelga (boshlang'ich bo'limga) qaytadi
+    if (tg.BackButton) tg.BackButton.onClick(function () {
+      App.open(startPage && PAGES[startPage] && current && current.name !== startPage ? startPage : null);
+    });
   }
 
   var params = new URLSearchParams(location.search);

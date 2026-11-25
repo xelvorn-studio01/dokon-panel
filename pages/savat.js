@@ -8,6 +8,9 @@
 //  v9 (bot javobida v >= 9 bo'lsa): 🔍 nom bo'yicha qidirish (shtrixsiz tovar ham) va kasr soni (0.75 kg).
 //  kg tovar (bot "kg" belgisini yuboradi - jadvalning I ustuni): "so'm/kg", soni 0.75 yoki 750g, +/- 0.1 kg.
 //  Dona tovar - butun son. Eski bot (v8) bilan ochilsa - avvalgidek faqat shtrix va butun son.
+//  v14: PANEL ichidan ochilsa (manzilda k= kalit yo'q) - narxlar App.api("narxlar"), sotuv App.api("sotuv").
+//       sendData ishlatilmaydi, oyna YOPILMAYDI: ✅ Sotildi -> chek shu yerda, savat tozalanadi, keyingi xaridor.
+//       Internet uzilsa - o'sha takrorlanmas kod bilan qayta yuboriladi (bot ikki marta yozmaydi).
 // ============================================================
 (function () {
   var LIB = "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js";
@@ -76,13 +79,17 @@
 
   App.register("savat", {
     render: function (el, params) {
-      var dokon = String(params.get ? params.get("dokon") || "" : "").toLowerCase();
-      var key = params.get ? params.get("k") || "" : "";
-      var api = params.get ? params.get("api") || "" : "";
+      // v14: paneldan App.open("savat") bilan ochilganda params bo'sh - manzildagi parametrlar olinadi
+      var qp = params && params.get ? params : new URLSearchParams(location.search);
+      var dokon = String(qp.get("dokon") || "").toLowerCase();
+      var key = qp.get("k") || "";
+      var api = qp.get("api") || "";
+      var viaApi = !key; // v14: kalit yo'q = panel ichidan (Telegram imzosi bilan API)
       var K_CART = "savat_" + dokon, K_LAST = "savat_oxirgi_" + dokon, K_PRICES = "savat_narx_" + dokon;
 
-      if (!dokon || !key || !/^https:\/\/script\.google\.com\/.+\/exec$/.test(api)) {
-        el.innerHTML = '<h1>🛒 Sotuv</h1><p class="err">Bu sahifa botdagi <b>🛒 Sotuv</b> tugmasi orqali ochilishi kerak.</p>' +
+      if (!dokon || !/^https:\/\/script\.google\.com\/.+\/exec$/.test(api) ||
+          (viaApi && !(App.inTelegram && App.tg && App.tg.initData))) {
+        el.innerHTML = '<h1>🛒 Sotuv</h1><p class="err">Bu sahifa botdagi <b>🛒 Sotuv</b> yoki <b>🏪 Panel</b> tugmasi orqali ochilishi kerak.</p>' +
           '<p class="muted">Tugma ko\'rinmasa, botda /start bosing.</p>';
         return;
       }
@@ -98,6 +105,7 @@
         '<div id="searchHits" class="sv-hits"></div>' +
         '<div style="margin-bottom:10px"></div>' +
         '<button id="restoreBtn" class="btn secondary block" type="button" style="display:none;margin-bottom:10px">↩️ Oxirgi savatni tiklash</button>' +
+        '<div id="svDone"></div>' +
         '<div id="cartList"></div>' +
         '<div class="sv-total card">' +
         '  <div class="sv-sum"><span>Jami:</span> <b id="svTotal">0</b> so\'m <span id="svCount" class="muted small"></span></div>' +
@@ -126,6 +134,8 @@
       var cart = store(K_CART) || [];   // [{ bc, name, price, qty }]
       var pay = "";
       var sending = false;
+      var pendingN = null;      // v14: API sotuvning takrorlanmas kodi (savat o'zgarmaguncha o'sha kod)
+      var doneEl = el.querySelector("#svDone");
 
       // ----- narxlar -----
       function applyPrices(data) {
@@ -157,28 +167,35 @@
       function loadPrices() {
         var cached = store(K_PRICES);
         if (cached && cached.items) { applyPrices(cached); loadedOk = true; setStatus("Skanerlang. (Narxlar yangilanyapti...)"); }
-        var url = api + "?a=narx&dokon=" + encodeURIComponent(dokon) + "&k=" + encodeURIComponent(key);
-        fetch(url).then(function (r) { return r.json(); }).then(function (data) {
+        function onPrices(data) {
           if (!data || !data.ok) {
             var e = data && data.err;
+            if (e === "tarmoq") { onNet(); return; }
             if (e === "kalit") setStatus("Tugma eskirgan. Botda /start bosib, 🛒 Sotuv'ni qayta oching.", "err");
             else if (e === "obuna") setStatus("Obuna muddati tugagan. Do'kon egasiga murojaat qiling.", "err");
+            else if (e === "imzo" || e === "eski" || e === "init") setStatus("Panel eskirgan. Yopib, botdagi 🏪 Panel dan qayta oching.", "err");
+            else if (e === "ruxsat") setStatus("Sizga ruxsat berilmagan. ID'ingizni adminga yuboring.", "err");
+            else if (e === "amal") setStatus("Bot eski versiyada (v14 kerak). Botdagi 🛒 Sotuv tugmasidan foydalaning.", "err");
             else setStatus("Narxlarni olib bo'lmadi (" + (e || "xato") + "). Qayta oching.", "err");
-            if (e === "kalit" || e === "obuna") { loadedOk = false; store(K_PRICES, null); prices = {}; draw(); }
+            if (e === "kalit" || e === "obuna" || e === "ruxsat") { loadedOk = false; store(K_PRICES, null); prices = {}; draw(); }
             return;
           }
           store(K_PRICES, data);
           applyPrices(data);
           loadedOk = true;
           setStatus("Skanerlang - tovar savatga o'zi tushadi.");
-        }).catch(function () {
+        }
+        function onNet() {
           if (loadedOk) setStatus("Internet sekin - oxirgi saqlangan narxlar ishlatilyapti.", "err");
           else setStatus("Narxlar yuklanmadi. Internetni tekshirib, qayta oching.", "err");
-        });
+        }
+        if (viaApi) { App.api("narxlar").then(onPrices); return; }
+        var url = api + "?a=narx&dokon=" + encodeURIComponent(dokon) + "&k=" + encodeURIComponent(key);
+        fetch(url).then(function (r) { return r.json(); }).then(onPrices).catch(onNet);
       }
 
       // ----- savat -----
-      function save() { store(K_CART, cart.length ? cart : null); }
+      function save() { store(K_CART, cart.length ? cart : null); pendingN = null; }
 
       function total() {
         var s = 0;
@@ -207,12 +224,13 @@
           listEl.innerHTML = html;
         }
         totalEl.textContent = money(total());
+        el.querySelector(".sv-total").classList.toggle("sv-free", !cart.length); // v14: bo'sh savatda pastga yopishmaydi (chek ko'rinsin)
         el.querySelector("#svCount").textContent = cart.length ? cart.length + " xil" : "";
         el.querySelectorAll("[data-pay]").forEach(function (b) {
           b.className = "btn grow " + (b.getAttribute("data-pay") === pay ? "" : "secondary");
         });
         sellBtn.disabled = !cart.length || !pay || sending;
-        sellBtn.textContent = !cart.length ? "✅ Sotildi" : !pay ? "To'lov turini tanlang" : "✅ Sotildi - " + money(total()) + " so'm";
+        sellBtn.textContent = sending ? "⏳ Yozilyapti..." : !cart.length ? "✅ Sotildi" : !pay ? "To'lov turini tanlang" : "✅ Sotildi - " + money(total()) + " so'm";
         var last = store(K_LAST);
         restoreBtn.style.display = !cart.length && last && last.length ? "block" : "none";
       }
@@ -229,6 +247,7 @@
         var found = null;
         cart.forEach(function (c) { if (c.bc && bcKey(c.bc) === bcKey(code)) found = c; });
         if (!found && v9) cart.forEach(function (c) { if (!c.bc && nameKey(c.name) === nameKey(p.name)) found = c; });
+        doneEl.innerHTML = ""; // v14: oldingi chek yopiladi
         if (found) { found.qty = roundQty(found.qty + 1); found.price = p.price; found.name = p.name; if (!found.bc) found.bc = code; }
         else { found = { bc: code, name: p.name, price: p.price, qty: 1, kg: !!p.kg }; cart.unshift(found); }
         save();
@@ -246,6 +265,7 @@
           if (o.bc && c.bc && bcKey(c.bc) === bcKey(o.bc)) found = c;
           else if (!found && nameKey(c.name) === nameKey(o.name)) found = c;
         });
+        doneEl.innerHTML = ""; // v14
         if (found) { found.qty = roundQty(found.qty + 1); found.price = o.price; found.name = o.name; found.kg = o.kg; }
         else { found = { bc: o.bc, name: o.name, price: o.price, qty: 1, kg: o.kg }; cart.unshift(found); }
         save();
@@ -302,7 +322,7 @@
 
       listEl.addEventListener("click", function (e) {
         var b = e.target.closest("button");
-        if (!b) return;
+        if (!b || sending) return; // v14: yozilayotganda savat o'zgarmasin
         var i;
         var step;
         if (b.hasAttribute("data-p")) { i = +b.getAttribute("data-p"); step = cart[i].kg ? 0.1 : 1; cart[i].qty = Math.min(9999, roundQty(cart[i].qty + step)); }
@@ -347,7 +367,7 @@
       });
 
       el.querySelector("#clearBtn").addEventListener("click", function () {
-        if (!cart.length) return;
+        if (!cart.length || sending) return;
         store(K_LAST, cart);
         cart = [];
         pay = "";
@@ -361,8 +381,64 @@
         if (last && last.length) { cart = last; save(); draw(); setStatus("↩️ Oxirgi savat tiklandi."); }
       });
 
+      // v14: chek (API javobi) savat ustida ko'rinadi
+      function showDone(r, sum, p) {
+        if (r.dup) {
+          doneEl.innerHTML = '<div class="card sv-done"><b>✅ Bu sotuv allaqachon yozilgan</b>' +
+            '<div class="muted small">Chek botga yuborilgan. Keyingi xaridorni skanerlang.</div></div>';
+          return;
+        }
+        var h = '<div class="card sv-done"><div class="sv-done-h">✅ Chek #' + App.esc(r.id) + ' · <b>' + money(r.total) + "</b> so'm · " +
+          (r.pay === "karta" ? "💳 Karta" : "💵 Naqd") + '</div><div class="muted small">' + App.esc(r.sana + ", " + r.vaqt) + "</div>";
+        (r.lines || []).forEach(function (x) {
+          h += '<div class="hs-row"><span class="hs-n">' + App.esc(x.n) + " × " + fmtQty(x.q) + (x.u === "kg" ? " kg" : "") +
+            '</span><span class="hs-s">' + money(x.s) + "</span></div>";
+        });
+        if (r.changed) h += '<p class="err small">⚠️ Ba\'zi narxlar jadvalda o\'zgargan - jami jadvaldagi narx bo\'yicha.</p>';
+        if (r.missing && r.missing.length) h += '<p class="err small">⚠️ Yozilmadi (jadvalda yo\'q / narxi yo\'q): ' + App.esc(r.missing.join(", ")) + "</p>";
+        if (r.low && r.low.length) h += '<p class="small">' + r.low.map(App.esc).join("<br>") + "</p>";
+        if (r.men) h += '<p class="small">📊 Bugun siz: <b>' + r.men.chek + " ta chek, " + money(r.men.sum) + "</b> so'm</p>";
+        h += '<div class="muted small">Chek botga ham yuborildi - ❌ bekor qilish o\'sha yerda.</div></div>';
+        doneEl.innerHTML = h;
+      }
+
+      function sellApi() {
+        if (!pendingN) pendingN = nonce();
+        var sum = total(), p = pay;
+        var body = { t: p, n: pendingN, s: sum, i: cart.map(function (c) { return c.bc ? [c.bc, c.qty] : ["", c.qty, c.name]; }) };
+        sending = true;
+        draw();
+        setStatus("⏳ Sotuv yozilyapti...");
+        App.api("sotuv", body).then(function (r) {
+          sending = false;
+          r = r || {};
+          if (r.ok) {
+            // Sotuv yozildi - savat o'chadi (oyna yopilgan bo'lsa ham, qayta sotilmasin)
+            cart = []; pay = ""; pendingN = null;
+            store(K_CART, null); store(K_LAST, null);
+            if (!el.isConnected) return;
+            showDone(r, sum, p);
+            App.haptic("success");
+            setStatus("✅ Yozildi. Keyingi xaridorni skanerlang.", "ok");
+            draw();
+            try { window.scrollTo(0, 0); } catch (e) {}
+            return;
+          }
+          if (!el.isConnected) return;
+          var msg;
+          if (r.err === "tarmoq") msg = "📶 Internet uzildi. Qayta bosing - sotuv ikki marta yozilmaydi.";
+          else if (r.err === "imzo" || r.err === "eski" || r.err === "init") msg = "Panel eskirgan. Yopib, botdagi 🏪 Panel dan qayta oching (savat saqlanadi).";
+          else if (r.err === "amal") msg = "Bot eski versiyada (v14 kerak). Botdagi 🛒 Sotuv tugmasidan foydalaning.";
+          else msg = r.msg || ("Sotuv yozilmadi (" + (r.err || "xato") + ").");
+          App.haptic("error");
+          setStatus(msg, "err");
+          draw();
+        });
+      }
+
       sellBtn.addEventListener("click", function () {
         if (!cart.length || !pay || sending) return;
+        if (viaApi) { sellApi(); return; }
         var payload = {
           a: "sotuv", t: pay, n: nonce(), s: total(),
           i: cart.map(function (c) { return c.bc ? [c.bc, c.qty] : ["", c.qty, c.name]; })

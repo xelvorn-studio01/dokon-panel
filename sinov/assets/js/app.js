@@ -7,21 +7,21 @@
 //  Eslatma: #... (hash) ishlatilmaydi - Telegram unga o'z ma'lumotini yozadi.
 // ============================================================
 (function () {
-  var VERSION = "6-s13"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
+  var VERSION = "8-s14"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
 
   // ===== BO'LIMLAR RO'YXATI =====
   // Yangi bo'lim qo'shish: pages/nom.js yarating va shu yerga bir qator yozing.
   var PAGES = {
     skaner: { title: "Skaner", icon: "📷", file: "pages/skaner.js" },
-    savat:  { title: "Sotuv",  icon: "🛒", file: "pages/savat.js" },  // faqat botdagi 🛒 Sotuv tugmasi orqali ishlaydi
+    savat:  { title: "Sotuv",  icon: "🛒", file: "pages/savat.js" },  // botdagi 🛒 Sotuv tugmasi yoki v14: panel ichidan (API)
     panel:  { title: "Panel",  icon: "🏪", file: "pages/panel.js" },  // v11: botdagi 🏪 Panel (inline tugma) orqali
     import: { title: "Excel yuklash", icon: "📊", file: "pages/import.js" }, // v12: panel ichidan ochiladi
     qoldiq: { title: "Qoldiq",  icon: "📦", file: "pages/tovar.js" },   // v13: panel ichidan (qoldiq + narx bitta faylda)
     narx:   { title: "Narx",    icon: "✏️", file: "pages/tovar.js" },   // v13
-    hisobot: { title: "Hisobot", icon: "🧾", file: "pages/hisobot.js" } // v13
+    hisobot: { title: "Hisobot", icon: "🧾", file: "pages/hisobot.js" }, // v13
+    qidiruv: { title: "Qidiruv", icon: "🔍", file: "pages/qidiruv.js" }  // v14: panel ichidan (xodim ham)
     // kassa:   { title: "Kassa",     icon: "💰", file: "pages/kassa.js" },
     // muddat:  { title: "Muddatlar", icon: "⏰", file: "pages/muddat.js" },
-    // qidiruv: { title: "Qidiruv",   icon: "🔎", file: "pages/qidiruv.js" },
   };
 
   var tg = window.Telegram ? window.Telegram.WebApp : null;

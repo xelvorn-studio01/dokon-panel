@@ -5,6 +5,8 @@
 //  Ma'lumot App.api("men") orqali keladi - bot Telegram imzosini tekshirib, kimligingizni aniqlaydi.
 //  Bo'limlar keyingi qadamlarda birin-ketin yoqiladi. v12: 📊 Excel yuklash yoqildi (pages/import.js).
 //  v13: 📦 Qoldiq, ✏️ Narx (pages/tovar.js), 🧾 Hisobot (pages/hisobot.js) yoqildi.
+//  v14: bitta panel, rolga qarab ikki ko'rinish. Xodim: 🛒 Sotuv, 🔍 Qidiruv (+ 💰 Kassa, ⏰ Muddat - tez orada).
+//       Admin: hammasi. 🛒 Sotuv panel ichida API orqali ishlaydi (oyna yopilmaydi).
 // ============================================================
 (function () {
   var ERR = {
@@ -21,12 +23,17 @@
     amal:   "Bot bu amalni bilmaydi (eski versiya bo'lishi mumkin)."
   };
 
-  // Keyingi qadamlarda shu yerga bo'limlar qo'shiladi (on: true bo'lganda bosiladi)
+  // Bo'limlar. hamma: true - xodim ham ko'radi (aks holda faqat admin).
+  // on: true bo'lganda bosiladi; v - botning kamida shu versiyasi kerak (eski botda "botni yangilang").
   var SECTIONS = [
-    { key: "import", icon: "📊", title: "Excel yuklash",  on: true },  // v12,
-    { key: "qoldiq", icon: "📦", title: "Qoldiq",         on: true },  // v13
-    { key: "narx",   icon: "✏️", title: "Narx",           on: true },  // v13
-    { key: "hisobot", icon: "🧾", title: "Hisobot",       on: true }   // v13
+    { key: "savat",   icon: "🛒", title: "Sotuv",          on: true, v: 14, hamma: true }, // v14
+    { key: "qidiruv", icon: "🔍", title: "Qidiruv",        on: true, v: 14, hamma: true }, // v14
+    { key: "import",  icon: "📊", title: "Excel yuklash",  on: true },  // v12
+    { key: "qoldiq",  icon: "📦", title: "Qoldiq",         on: true },  // v13
+    { key: "narx",    icon: "✏️", title: "Narx",           on: true },  // v13
+    { key: "hisobot", icon: "🧾", title: "Hisobot",        on: true },  // v13
+    { key: "kassa",   icon: "💰", title: "Kassa",          on: false, hamma: true }, // v15
+    { key: "muddat",  icon: "⏰", title: "Muddatlar",      on: false, hamma: true }  // v16
   ];
 
   var root = null;
@@ -55,6 +62,8 @@
       (r.kun !== null && r.kun !== undefined ? " · obuna: " + (r.kun >= 0 ? r.kun + " kun qoldi" : "tugagan") : "") +
       "</div></div>";
 
+    var bv = Number(r.v) || 0;
+    var me = r.men;
     if (r.admin && r.sotuv) {
       var s = r.sotuv, q = r.qoldiq || {};
       html += '<div class="pn-stats">' +
@@ -64,16 +73,21 @@
         stat("📦 Tovarlar", money(q.tovar || 0), "qoldig'i hisobda: " + (q.hisobda || 0)) +
         stat("⚠️ Kam qolgan", String(q.kam || 0), "chegara: " + (q.chegara !== undefined ? q.chegara : "-"), q.kam ? "pn-warn" : "") +
         "</div>";
-
-      html += '<div class="menu">';
-      SECTIONS.forEach(function (x) {
-        html += '<a href="#" class="' + (x.on ? "" : "off") + '" data-sec="' + x.key + '"><span class="ico">' + x.icon +
-          "</span>" + App.esc(x.title) + (x.on ? "" : '<span class="soon">tez orada</span>') + "</a>";
-      });
-      html += "</div>";
-    } else {
-      html += '<div class="card"><p>Panel hozircha admin uchun. Sotuv uchun botdagi <b>🛒 Sotuv</b> tugmasidan foydalaning.</p></div>';
+    } else if (me) {
+      // v14: xodim o'zining bugungi sotuvini ko'radi
+      html += '<div class="pn-stats">' +
+        stat("🛒 Bugun siz sotdingiz", money(me.sum) + " so'm", me.chek + " ta chek", "wide") + "</div>";
     }
+
+    var list = SECTIONS.filter(function (x) { return r.admin || x.hamma; });
+    html += '<div class="menu">';
+    list.forEach(function (x) {
+      var old = x.on && x.v && bv < x.v;  // panel yangi, bot eski
+      var on = x.on && !old;
+      html += '<a href="#" class="' + (on ? "" : "off") + '" data-sec="' + x.key + '"><span class="ico">' + x.icon +
+        "</span>" + App.esc(x.title) + (on ? "" : '<span class="soon">' + (old ? "botni yangilang" : "tez orada") + "</span>") + "</a>";
+    });
+    html += "</div>";
 
     html += '<div class="pn-foot"><button class="btn secondary" id="pn-reload">🔄 Yangilash</button>' +
       '<p class="muted small">Panel v' + App.esc(App.version) + " · bot v" + App.esc(r.v) + "</p></div>";

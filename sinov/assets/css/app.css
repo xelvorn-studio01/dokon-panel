@@ -135,3 +135,18 @@ details summary { cursor: pointer; }
 .hs-n { min-width: 0; overflow-wrap: anywhere; }
 .hs-n .small { display: block; }
 .hs-s { white-space: nowrap; }
+
+/* v14: 🛒 Sotuv (panelda) - yozilgan chek */
+.sv-done { margin-bottom: 10px; border-left: 4px solid var(--ok); }
+.sv-done-h { font-size: 17px; margin-bottom: 2px; }
+.sv-done p { margin: 6px 0 0; }
+/* v14: 🔍 Qidiruv */
+.qd-form { margin-bottom: 10px; }
+.qd-note { margin: 0 0 8px; }
+.qd-item { margin-bottom: 8px; }
+.qd-kod { font-size: 26px; font-weight: 800; letter-spacing: 1px; }
+.qd-name { font-weight: 700; font-size: 17px; margin: 2px 0; overflow-wrap: anywhere; }
+.qd-price { font-size: 18px; }
+.qd-meta { margin-top: 4px; overflow-wrap: anywhere; }
+.qd-act { margin-top: 8px; }
+.qd-top { display: flex; flex-direction: column; gap: 4px; }

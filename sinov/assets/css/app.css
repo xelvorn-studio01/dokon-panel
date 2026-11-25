@@ -150,3 +150,34 @@ details summary { cursor: pointer; }
 .qd-meta { margin-top: 4px; overflow-wrap: anywhere; }
 .qd-act { margin-top: 8px; }
 .qd-top { display: flex; flex-direction: column; gap: 4px; }
+.sv-total.sv-free { position: static; box-shadow: none; }
+
+/* v15: 💰 Kassa */
+.ks-form { margin-bottom: 12px; }
+.ks-l { display: block; font-size: 14px; color: var(--hint); margin-top: 10px; }
+.ks-l .field { margin-top: 4px; color: var(--text); }
+.ks-h { min-height: 16px; margin-top: 2px; }
+.ks-fill-s { display: block; font-size: 12px; margin-top: 2px; }
+.ks-total { font-size: 18px; }
+.ks-sub { margin-top: 16px; }
+.ks-item { margin-bottom: 8px; }
+.ks-row { display: flex; align-items: baseline; gap: 8px; }
+.ks-sum { margin-left: auto; white-space: nowrap; }
+.ks-x { margin-top: 8px; }
+.ks-tot { margin-top: 8px; line-height: 1.6; }
+.btn.small { font-size: 14px; padding: 7px 10px; }
+/* v15: ➕ Mahsulot qo'shish */
+.mh-unit { margin-top: 4px; }
+.mh-check .card { margin-top: 10px; line-height: 1.5; }
+.mh-bad { border-left: 4px solid var(--err); }
+.mh-warn { border-left: 4px solid #d98a00; }
+.mh-ok { border-left: 4px solid var(--ok); }
+/* v15: 💵 Qaytim (savatda) */
+.sv-cash { margin-bottom: 10px; }
+.sv-cash .row { align-items: center; }
+.sv-cash-l { white-space: nowrap; }
+.sv-quick { margin: 8px 0 4px; }
+.sv-quick .tv-chip { padding: 6px 10px; }
+.sv-change { font-size: 18px; min-height: 26px; }
+.sv-change-v { font-size: 22px; color: var(--ok); }
+.sv-done-q { margin-top: 6px; font-size: 17px; }

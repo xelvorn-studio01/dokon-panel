@@ -7,6 +7,7 @@
 //  v13: 📦 Qoldiq, ✏️ Narx (pages/tovar.js), 🧾 Hisobot (pages/hisobot.js) yoqildi.
 //  v14: bitta panel, rolga qarab ikki ko'rinish. Xodim: 🛒 Sotuv, 🔍 Qidiruv (+ 💰 Kassa, ⏰ Muddat - tez orada).
 //       Admin: hammasi. 🛒 Sotuv panel ichida API orqali ishlaydi (oyna yopilmaydi).
+//  v15: 💰 Kassa (xodim + admin), ➕ Mahsulot qo'shish (admin) yoqildi.
 // ============================================================
 (function () {
   var ERR = {
@@ -28,11 +29,12 @@
   var SECTIONS = [
     { key: "savat",   icon: "🛒", title: "Sotuv",          on: true, v: 14, hamma: true }, // v14
     { key: "qidiruv", icon: "🔍", title: "Qidiruv",        on: true, v: 14, hamma: true }, // v14
+    { key: "kassa",   icon: "💰", title: "Kassa",          on: true, v: 15, hamma: true }, // v15
+    { key: "mahsulot", icon: "➕", title: "Mahsulot qo'shish", on: true, v: 15 },      // v15
     { key: "import",  icon: "📊", title: "Excel yuklash",  on: true },  // v12
     { key: "qoldiq",  icon: "📦", title: "Qoldiq",         on: true },  // v13
     { key: "narx",    icon: "✏️", title: "Narx",           on: true },  // v13
     { key: "hisobot", icon: "🧾", title: "Hisobot",        on: true },  // v13
-    { key: "kassa",   icon: "💰", title: "Kassa",          on: false, hamma: true }, // v15
     { key: "muddat",  icon: "⏰", title: "Muddatlar",      on: false, hamma: true }  // v16
   ];
 

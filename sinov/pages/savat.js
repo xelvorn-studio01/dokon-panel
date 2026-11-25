@@ -29,6 +29,11 @@
   }
   function roundQty(n) { return Math.round(n * 1000) / 1000; }
   // v9: "0.75", "0,75", "1.5kg", "750g", "750 gr", "750г" -> kg. Yaroqsiz bo'lsa NaN.
+  // v9: dona - faqat butun son ("0.5" yoki "1,5" -> NaN, qabul qilinmaydi)
+  function parseDona(t) {
+    t = String(t || "").replace(/\s/g, "");
+    return /^\d+$/.test(t) ? Number(t) : NaN;
+  }
   function parseKg(t) {
     t = String(t || "").toLowerCase().replace(/\s/g, "").replace(",", ".");
     var m = t.match(/^(\d+(?:\.\d+)?)(kg|кг|g|gr|гр|г)?$/);
@@ -315,7 +320,7 @@
         if (!e.target.hasAttribute("data-q")) return;
         var c = cart[+e.target.getAttribute("data-q")];
         if (!c) return;
-        var q = c.kg ? parseKg(e.target.value) : Math.floor(Number(String(e.target.value).replace(/\D/g, "")));
+        var q = c.kg ? parseKg(e.target.value) : parseDona(e.target.value);
         if (!(isFinite(q) && q > 0 && q <= 9999 && (c.kg || q >= 1))) return;
         c.qty = q;
         save();
@@ -329,8 +334,10 @@
         var i = +e.target.getAttribute("data-q");
         var q;
         if (cart[i].kg) q = parseKg(e.target.value);   // kg: 0.75 / 750g
-        else q = Math.floor(Number(String(e.target.value).replace(/\D/g, "")));  // dona: butun son
-        if (isFinite(q) && q > 0 && q <= 9999 && (cart[i].kg || q >= 1)) cart[i].qty = q; else if (q === 0) cart.splice(i, 1);
+        else q = v9 ? parseDona(e.target.value) : Math.floor(Number(String(e.target.value).replace(/\D/g, "")));  // dona: butun son
+        if (isFinite(q) && q > 0 && q <= 9999 && (cart[i].kg || q >= 1)) cart[i].qty = q;
+        else if (q === 0) cart.splice(i, 1);
+        else if (!cart[i].kg && /[.,]/.test(e.target.value)) setStatus("Bu tovar dona bilan sotiladi. Kg bo'lsa, jadvalning I ustuniga kg yozing.", "err");
         save();
         draw();
       });

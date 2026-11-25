@@ -7,7 +7,7 @@
 //  Eslatma: #... (hash) ishlatilmaydi - Telegram unga o'z ma'lumotini yozadi.
 // ============================================================
 (function () {
-  var VERSION = "2-s9c"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
+  var VERSION = "2-s9d"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
 
   // ===== BO'LIMLAR RO'YXATI =====
   // Yangi bo'lim qo'shish: pages/nom.js yarating va shu yerga bir qator yozing.

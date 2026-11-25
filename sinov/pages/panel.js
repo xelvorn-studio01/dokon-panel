@@ -8,6 +8,7 @@
 //  v14: bitta panel, rolga qarab ikki ko'rinish. Xodim: 🛒 Sotuv, 🔍 Qidiruv (+ 💰 Kassa, ⏰ Muddat - tez orada).
 //       Admin: hammasi. 🛒 Sotuv panel ichida API orqali ishlaydi (oyna yopilmaydi).
 //  v15: 💰 Kassa (xodim + admin), ➕ Mahsulot qo'shish (admin) yoqildi.
+//  v16: ⏰ Muddatlar (xodim + admin), 📊 Statistika, 👥 Xodimlar, ⚙️ Sozlamalar (admin) yoqildi.
 // ============================================================
 (function () {
   var ERR = {
@@ -35,7 +36,10 @@
     { key: "qoldiq",  icon: "📦", title: "Qoldiq",         on: true },  // v13
     { key: "narx",    icon: "✏️", title: "Narx",           on: true },  // v13
     { key: "hisobot", icon: "🧾", title: "Hisobot",        on: true },  // v13
-    { key: "muddat",  icon: "⏰", title: "Muddatlar",      on: false, hamma: true }  // v16
+    { key: "muddat",  icon: "⏰", title: "Muddatlar",      on: true, v: 16, hamma: true }, // v16
+    { key: "statistika", icon: "📊", title: "Statistika",  on: true, v: 16 },  // v16
+    { key: "xodimlar", icon: "👥", title: "Xodimlar",      on: true, v: 16 },  // v16
+    { key: "sozlama", icon: "⚙️", title: "Sozlamalar",     on: true, v: 16 }   // v16
   ];
 
   var root = null;

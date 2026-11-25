@@ -7,7 +7,7 @@
 //  Eslatma: #... (hash) ishlatilmaydi - Telegram unga o'z ma'lumotini yozadi.
 // ============================================================
 (function () {
-  var VERSION = "9-s15"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
+  var VERSION = "10-s16"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
 
   // ===== BO'LIMLAR RO'YXATI =====
   // Yangi bo'lim qo'shish: pages/nom.js yarating va shu yerga bir qator yozing.
@@ -21,8 +21,11 @@
     hisobot: { title: "Hisobot", icon: "🧾", file: "pages/hisobot.js" }, // v13
     qidiruv: { title: "Qidiruv", icon: "🔍", file: "pages/qidiruv.js" }, // v14: panel ichidan (xodim ham)
     kassa:   { title: "Kassa",   icon: "💰", file: "pages/kassa.js" },   // v15: panel ichidan (xodim ham)
-    mahsulot: { title: "Mahsulot qo'shish", icon: "➕", file: "pages/mahsulot.js" } // v15: panel ichidan (admin)
-    // muddat:  { title: "Muddatlar", icon: "⏰", file: "pages/muddat.js" },
+    mahsulot: { title: "Mahsulot qo'shish", icon: "➕", file: "pages/mahsulot.js" }, // v15: panel ichidan (admin)
+    muddat:   { title: "Muddatlar", icon: "⏰", file: "pages/muddat.js" },      // v16: panel ichidan (xodim ham)
+    statistika: { title: "Statistika", icon: "📊", file: "pages/statistika.js" }, // v16: (admin)
+    xodimlar: { title: "Xodimlar", icon: "👥", file: "pages/xodimlar.js" },     // v16: (admin)
+    sozlama:  { title: "Sozlamalar", icon: "⚙️", file: "pages/sozlama.js" }     // v16: (admin)
   };
 
   var tg = window.Telegram ? window.Telegram.WebApp : null;

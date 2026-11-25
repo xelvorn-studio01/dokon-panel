@@ -68,3 +68,41 @@ input.field { width: 100%; font-size: 17px; padding: 10px; border: 1px solid #cc
           background: var(--card); color: var(--text); cursor: pointer; }
 .sv-hit b { white-space: nowrap; }
 .sv-nohit { margin: 2px 4px; }
+
+/* v11: 🏪 Panel bosh sahifasi */
+.pn-head { margin-bottom: 12px; }
+.pn-head h1 { margin-bottom: 2px; }
+.pn-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+.pn-stat .lbl { font-size: 13px; color: var(--hint); }
+.pn-stat .val { font-size: 20px; font-weight: 700; margin-top: 2px; }
+.pn-stat .sub { font-size: 13px; color: var(--hint); margin-top: 2px; }
+.pn-stat.wide { grid-column: 1 / -1; }
+.pn-warn .val { color: var(--err); }
+.menu a.off { opacity: .45; pointer-events: none; }
+.menu a .soon { display: block; font-size: 12px; font-weight: 400; color: var(--hint); margin-top: 2px; }
+.pn-foot { margin-top: 16px; text-align: center; }
+
+/* v12: 📊 Excel yuklash */
+.im-kind { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+.im-k { text-align: left; font-size: 16px; padding: 12px; border: 2px solid transparent; border-radius: var(--radius);
+        background: var(--card); color: var(--text); cursor: pointer; }
+.im-k span { display: block; font-size: 13px; color: var(--hint); margin-top: 2px; }
+.im-k.sel { border-color: var(--btn); }
+.im-pick { text-align: center; margin-bottom: 10px; }
+.im-gap { margin-top: 10px; }
+.im-notes { margin: 0 0 4px; }
+.im-col { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.im-col span { flex: 0 0 110px; font-size: 13px; }
+select.field { font-size: 15px; padding: 8px; }
+.im-list div { padding: 3px 0; border-bottom: 1px solid rgba(128,128,128,.15); }
+.im-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+.im-sim { margin-bottom: 8px; }
+.im-yn { margin-top: 8px; }
+.btn.sel { background: var(--btn); color: var(--btn-text); }
+.im-bar { position: sticky; bottom: 0; margin-top: 10px; box-shadow: 0 -2px 8px rgba(0,0,0,.08); }
+.im-bar .row { margin-top: 6px; }
+.im-res { line-height: 1.5; }
+details summary { cursor: pointer; }
+/* v12: kartochka ichidagi ikkinchi darajali tugmalar fon bilan qo'shilib ketmasin */
+.card .btn.secondary { background: var(--bg); border: 1px solid rgba(128,128,128,.25); }
+.card .btn.sel { background: var(--btn); color: var(--btn-text); border-color: var(--btn); }

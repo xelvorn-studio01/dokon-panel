@@ -3,6 +3,7 @@
 //  Botdagi "Muddat" varag'i bilan BIR XIL: ro'yxat (eng yaqini birinchi), ➕ qo'shish, ✔ olib tashlash.
 //  Har kuni 08:00 dagi bot eslatmasi avvalgidek ishlaydi (3 kun qolganlar).
 //  API: muddat, muddat_qidir, muddat_ok, muddat_x.
+//  v16.1: tovar ro'yxatdan bosilmasa ham - nomi to'liq mos kelsa yoki bitta topilsa, o'zi tanlanadi.
 // ============================================================
 (function () {
   var ERR = {
@@ -190,7 +191,7 @@
       return;
     }
     if (!hits.length) { box.innerHTML = $("#md-t").value.trim() ? '<p class="muted small">Topilmadi - boshqacha yozib ko\'ring.</p>' : ""; return; }
-    box.innerHTML = hits.map(function (x, i) {
+    box.innerHTML = '<p class="muted small">👇 Keraklisini bosing:</p>' + hits.map(function (x, i) {
       return '<button class="tv-item" data-h="' + i + '"><span class="tv-name">' + esc(x.n) + "</span>" +
         '<span class="tv-val muted small">' + (x.k ? "kod " + esc(x.k) : "") + "</span></button>";
     }).join("");
@@ -205,12 +206,42 @@
     });
   }
 
+  // v16.1: tovar ro'yxatdan bosilmagan bo'lsa - o'zi tanlaydi: nomi to'liq mos kelsa yoki bitta topilsa
+  function autoPick(list, typed) {
+    var k = norm(typed).trim();
+    if (!k || !list.length) return null;
+    var same = list.filter(function (x) { return norm(x.n).trim() === k || String(x.k) === typed.trim(); });
+    if (same.length === 1) return same[0];
+    return list.length === 1 ? list[0] : null;
+  }
+
   function save() {
     if (busy) return;
     var msg = $("#md-msg");
-    if (!pick) { msg.innerHTML = '<span class="err">Avval tovarni ro\'yxatdan tanlang.</span>'; return; }
-    var d = $("#md-d").value.trim(), s = $("#md-s").value.trim();
+    var d = $("#md-d").value.trim();
     if (!/^\d{1,2}[.\/-]\d{1,2}([.\/-]\d{2,4})?$/.test(d)) { msg.innerHTML = '<span class="err">' + ERR.sana + "</span>"; return; }
+    if (!pick) {
+      var typed = $("#md-t").value.trim();
+      if (!typed) { msg.innerHTML = '<span class="err">Tovar nomini yozing.</span>'; return; }
+      var take = function (list) {
+        pick = autoPick(list, typed);
+        if (pick) { drawHits(); save(); return; }
+        hits = list; drawHits();
+        msg.innerHTML = '<span class="err">' + (list.length ? "Bir nechta tovar chiqdi - keraklisini 👆 ro'yxatdan bosing." :
+          "Bunday tovar topilmadi. Nomini boshqacha yozing.") + "</span>";
+      };
+      if (hits.length) { take(hits); return; }
+      busy = true;
+      msg.innerHTML = '<span class="muted">Tovar qidirilyapti...</span>';
+      App.api("muddat_qidir", { q: typed }).then(function (r) {
+        busy = false;
+        if (!root || mode !== "add") return;
+        if (!r || !r.ok) { msg.innerHTML = '<span class="err">' + errText(r) + "</span>"; return; }
+        take(r.list || []);
+      });
+      return;
+    }
+    var s = $("#md-s").value.trim();
     if (!pendingN) pendingN = nonce();
     busy = true;
     $("#md-go").disabled = true;

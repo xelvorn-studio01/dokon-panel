@@ -6,7 +6,8 @@
 //  Narxlar botdan olinadi: API?a=narx&dokon=ID&k=KALIT (manzillar botdagi tugmada keladi).
 //  Bot narxni jadvaldan qayta tekshiradi - bu yerdagi narx faqat ko'rsatish uchun.
 //  v9 (bot javobida v >= 9 bo'lsa): 🔍 nom bo'yicha qidirish (shtrixsiz tovar ham) va kasr soni (0.75 kg).
-//  Eski bot (v8) bilan ochilsa - avvalgidek faqat shtrix va butun son.
+//  kg tovar (bot "kg" belgisini yuboradi - jadvalning I ustuni): "so'm/kg", soni 0.75 yoki 750g, +/- 0.1 kg.
+//  Dona tovar - butun son. Eski bot (v8) bilan ochilsa - avvalgidek faqat shtrix va butun son.
 // ============================================================
 (function () {
   var LIB = "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js";
@@ -27,6 +28,15 @@
     return /^\d+$/.test(s) ? (s.replace(/^0+/, "") || "0") : s.toLowerCase();
   }
   function roundQty(n) { return Math.round(n * 1000) / 1000; }
+  // v9: "0.75", "0,75", "1.5kg", "750g", "750 gr", "750г" -> kg. Yaroqsiz bo'lsa NaN.
+  function parseKg(t) {
+    t = String(t || "").toLowerCase().replace(/\s/g, "").replace(",", ".");
+    var m = t.match(/^(\d+(?:\.\d+)?)(kg|кг|g|gr|гр|г)?$/);
+    if (!m) return NaN;
+    var n = Number(m[1]);
+    if (m[2] && /^(g|gr|гр|г)$/.test(m[2])) n = n / 1000;
+    return roundQty(n);
+  }
   // 0.75 -> "0.75", 2 -> "2"
   function fmtQty(n) { return String(roundQty(Number(n) || 0)); }
   // Qidiruv uchun: kichik harf, apostroflar olib tashlanadi (botdagi norm() kabi)
@@ -118,10 +128,11 @@
         v9 = Number(data.v) >= 9;
         (data.items || []).forEach(function (it) {
           var bcs = it[0] || [], nm = String(it[1] || ""), pr = Number(it[2]) || 0;
-          bcs.forEach(function (bc) { prices[bcKey(bc)] = { name: nm, price: pr }; });
+          var kg = v9 && it[3] === "kg";
+          bcs.forEach(function (bc) { prices[bcKey(bc)] = { name: nm, price: pr, kg: kg }; });
           if (!v9 || !nm) return;
           var k = nameKey(nm);
-          var o = { name: nm, price: pr, bc: bcs.length ? String(bcs[0]) : "", n: norm(nm), s: skel(nm) };
+          var o = { name: nm, price: pr, kg: kg, bc: bcs.length ? String(bcs[0]) : "", n: norm(nm), s: skel(nm) };
           if (!byName[k]) byName[k] = o;
           list.push(o);
         });
@@ -133,7 +144,7 @@
         // Savatdagi narxlarni yangilaymiz (jadvalda o'zgargan bo'lsa)
         cart.forEach(function (c) {
           var p = c.bc ? prices[bcKey(c.bc)] : byName[nameKey(c.name)];
-          if (p) { c.price = p.price; c.name = p.name; }
+          if (p) { c.price = p.price; c.name = p.name; c.kg = !!p.kg; }
         });
         draw();
       }
@@ -179,9 +190,10 @@
             html += '<div class="sv-item card">' +
               '<div class="sv-name">' + App.esc(c.name) + '</div>' +
               '<div class="sv-line">' +
-              '<span class="muted small">' + money(c.price) + ' × </span>' +
+              '<span class="muted small">' + money(c.price) + (c.kg ? "/kg" : "") + ' × </span>' +
               '<button class="btn secondary sv-q" type="button" data-m="' + i + '">−</button>' +
-              '<input class="field sv-qty" inputmode="' + (v9 ? "decimal" : "numeric") + '" data-q="' + i + '" value="' + fmtQty(c.qty) + '">' +
+              '<input class="field sv-qty" inputmode="' + (c.kg ? "decimal" : "numeric") + '" data-q="' + i + '" value="' + fmtQty(c.qty) + '">' +
+              (c.kg ? '<span class="small">kg</span>' : '') +
               '<button class="btn secondary sv-q" type="button" data-p="' + i + '">+</button>' +
               '<b class="sv-isum">' + money(Math.round(c.price * c.qty)) + '</b>' +
               '<button class="btn secondary sv-q" type="button" data-x="' + i + '">✕</button>' +
@@ -213,11 +225,12 @@
         cart.forEach(function (c) { if (c.bc && bcKey(c.bc) === bcKey(code)) found = c; });
         if (!found && v9) cart.forEach(function (c) { if (!c.bc && nameKey(c.name) === nameKey(p.name)) found = c; });
         if (found) { found.qty = roundQty(found.qty + 1); found.price = p.price; found.name = p.name; if (!found.bc) found.bc = code; }
-        else { found = { bc: code, name: p.name, price: p.price, qty: 1 }; cart.unshift(found); }
+        else { found = { bc: code, name: p.name, price: p.price, qty: 1, kg: !!p.kg }; cart.unshift(found); }
         save();
         draw();
         App.haptic("success");
-        setStatus("✅ " + p.name + " — " + money(p.price) + " so'm" + (found.qty > 1 ? " (× " + fmtQty(found.qty) + ")" : ""), "ok");
+        setStatus("✅ " + p.name + " — " + money(p.price) + " so'm" + (p.kg ? "/kg" : "") +
+          (found.qty > 1 ? " (× " + fmtQty(found.qty) + (p.kg ? " kg" : "") + ")" : ""), "ok");
         return true;
       }
 
@@ -228,12 +241,14 @@
           if (o.bc && c.bc && bcKey(c.bc) === bcKey(o.bc)) found = c;
           else if (!found && nameKey(c.name) === nameKey(o.name)) found = c;
         });
-        if (found) { found.qty = roundQty(found.qty + 1); found.price = o.price; found.name = o.name; }
-        else { found = { bc: o.bc, name: o.name, price: o.price, qty: 1 }; cart.unshift(found); }
+        if (found) { found.qty = roundQty(found.qty + 1); found.price = o.price; found.name = o.name; found.kg = o.kg; }
+        else { found = { bc: o.bc, name: o.name, price: o.price, qty: 1, kg: o.kg }; cart.unshift(found); }
         save();
         draw();
         App.haptic("success");
-        setStatus("✅ " + o.name + " — " + money(o.price) + " so'm. Kg bo'lsa sonini yozing: 0.75", "ok");
+        if (!o.kg) { setStatus("✅ " + o.name + " — " + money(o.price) + " so'm", "ok"); return; }
+        // kg tovar: og'irligini yozish uchun maydon ochiladi
+        setStatus("⚖️ " + o.name + " — " + money(o.price) + " so'm/kg. Og'irligini yozing: 0.75 yoki 750g", "ok");
         var q = listEl.querySelector('[data-q="' + cart.indexOf(found) + '"]');
         if (q) { q.focus(); try { q.select(); } catch (e) {} }
       }
@@ -267,7 +282,7 @@
         }
         hitsEl.innerHTML = hits.map(function (o, i) {
           return '<button class="sv-hit" type="button" data-h="' + i + '"><span>' + App.esc(o.name) +
-            (o.bc ? "" : ' <span class="muted small">(shtrixsiz)</span>') + '</span><b>' + money(o.price) + '</b></button>';
+            (o.bc ? "" : ' <span class="muted small">(shtrixsiz)</span>') + '</span><b>' + money(o.price) + (o.kg ? "/kg" : "") + '</b></button>';
         }).join("");
       }
       hitsEl.addEventListener("click", function (e) {
@@ -284,8 +299,12 @@
         var b = e.target.closest("button");
         if (!b) return;
         var i;
-        if (b.hasAttribute("data-p")) { i = +b.getAttribute("data-p"); cart[i].qty = Math.min(9999, roundQty(cart[i].qty + 1)); }
-        else if (b.hasAttribute("data-m")) { i = +b.getAttribute("data-m"); if (cart[i].qty > 1) cart[i].qty = roundQty(cart[i].qty - 1); else cart.splice(i, 1); }
+        var step;
+        if (b.hasAttribute("data-p")) { i = +b.getAttribute("data-p"); step = cart[i].kg ? 0.1 : 1; cart[i].qty = Math.min(9999, roundQty(cart[i].qty + step)); }
+        else if (b.hasAttribute("data-m")) {
+          i = +b.getAttribute("data-m"); step = cart[i].kg ? 0.1 : 1;
+          if (roundQty(cart[i].qty - step) > 0) cart[i].qty = roundQty(cart[i].qty - step); else cart.splice(i, 1);
+        }
         else if (b.hasAttribute("data-x")) { i = +b.getAttribute("data-x"); cart.splice(i, 1); }
         else return;
         save();
@@ -295,9 +314,9 @@
         if (!e.target.hasAttribute("data-q")) return;
         var i = +e.target.getAttribute("data-q");
         var q;
-        if (v9) q = roundQty(Number(String(e.target.value).replace(/\s/g, "").replace(",", ".")));
-        else q = Math.floor(Number(String(e.target.value).replace(/\D/g, "")));
-        if (isFinite(q) && q > 0 && q <= 9999 && (v9 || q >= 1)) cart[i].qty = q; else if (q === 0) cart.splice(i, 1);
+        if (cart[i].kg) q = parseKg(e.target.value);   // kg: 0.75 / 750g
+        else q = Math.floor(Number(String(e.target.value).replace(/\D/g, "")));  // dona: butun son
+        if (isFinite(q) && q > 0 && q <= 9999 && (cart[i].kg || q >= 1)) cart[i].qty = q; else if (q === 0) cart.splice(i, 1);
         save();
         draw();
       });

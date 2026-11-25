@@ -7,12 +7,13 @@
 //  Eslatma: #... (hash) ishlatilmaydi - Telegram unga o'z ma'lumotini yozadi.
 // ============================================================
 (function () {
-  var VERSION = "1"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
+  var VERSION = "2"; // fayllar o'zgarganda oshiring (eski kesh ishlatilmasligi uchun)
 
   // ===== BO'LIMLAR RO'YXATI =====
   // Yangi bo'lim qo'shish: pages/nom.js yarating va shu yerga bir qator yozing.
   var PAGES = {
-    skaner: { title: "Skaner", icon: "📷", file: "pages/skaner.js" }
+    skaner: { title: "Skaner", icon: "📷", file: "pages/skaner.js" },
+    savat:  { title: "Sotuv",  icon: "🛒", file: "pages/savat.js" }  // faqat botdagi 🛒 Sotuv tugmasi orqali ishlaydi
     // kassa:   { title: "Kassa",     icon: "💰", file: "pages/kassa.js" },
     // muddat:  { title: "Muddatlar", icon: "⏰", file: "pages/muddat.js" },
     // qidiruv: { title: "Qidiruv",   icon: "🔎", file: "pages/qidiruv.js" },

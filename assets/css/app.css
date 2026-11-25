@@ -43,3 +43,20 @@ input.field { width: 100%; font-size: 17px; padding: 10px; border: 1px solid #cc
 .scan-view { width: 100%; border-radius: var(--radius); overflow: hidden; background: #000; min-height: 220px; }
 .scan-view video { width: 100% !important; object-fit: cover; }
 .scan-status { margin: 10px 0 14px; min-height: 22px; }
+
+/* Sotuv (savat) bo'limi */
+.sv-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.sv-scan { min-height: 160px; max-height: 200px; }
+.sv-scan video { max-height: 200px; }
+.sv-empty { text-align: center; padding: 12px 0; }
+.sv-item { margin-bottom: 8px; padding: 10px; }
+.sv-name { font-weight: 600; margin-bottom: 6px; }
+.sv-line { display: flex; align-items: center; gap: 6px; }
+.sv-q { padding: 6px 10px; min-width: 36px; }
+.sv-qty { width: 56px !important; text-align: center; padding: 6px !important; }
+.sv-isum { margin-left: auto; white-space: nowrap; }
+.sv-total { position: sticky; bottom: 0; margin-top: 10px; box-shadow: 0 -2px 8px rgba(0,0,0,.08); }
+.sv-sum { font-size: 20px; margin-bottom: 10px; }
+.sv-pay { margin-bottom: 10px; }
+.sv-sell { font-size: 18px; padding: 14px; }
+.sv-sell:disabled { opacity: .5; }

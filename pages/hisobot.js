@@ -67,7 +67,7 @@
       return;
     }
     h += "<div class=\"pn-stats\">" +
-      stat("🟰 Jami savdo", money(r.total) + " so'm", r.cheks + " ta chek", "wide") +
+      stat("💰 Jami savdo", money(r.total) + " so'm", r.cheks + " ta chek", "wide") +
       stat("💵 Naqd", money(r.naqd)) +
       stat("💳 Karta", money(r.karta)) +
       (r.profit !== null && r.profit !== undefined

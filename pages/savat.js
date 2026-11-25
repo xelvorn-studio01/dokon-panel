@@ -11,6 +11,9 @@
 //  v14: PANEL ichidan ochilsa (manzilda k= kalit yo'q) - narxlar App.api("narxlar"), sotuv App.api("sotuv").
 //       sendData ishlatilmaydi, oyna YOPILMAYDI: ✅ Sotildi -> chek shu yerda, savat tozalanadi, keyingi xaridor.
 //       Internet uzilsa - o'sha takrorlanmas kod bilan qayta yuboriladi (bot ikki marta yozmaydi).
+//  v15: 💵 Qaytim - 💵 Naqd tanlansa "Berdi" maydoni (va tez tugmalar: 10 000, 50 000 ... gacha yaxlit).
+//       "Qaytim: X so'm" darrov chiqadi, kam bo'lsa "Yetmaydi: X". Sotuvda "b" ketadi - bot v15 chekka
+//       "Berdi / Qaytim" yozadi (eski bot "b" ni e'tiborsiz qoldiradi). Panel va eski 🛒 Sotuv - ikkalasida.
 // ============================================================
 (function () {
   var LIB = "https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js";
@@ -57,6 +60,15 @@
   function money(n) {
     var v = Math.round(Number(n) || 0);
     return String(v).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  }
+  // v15: "50000", "50 000", "50.000", "50k" -> so'm. Bo'sh -> 0, xato -> NaN
+  function parseMoney(t) {
+    t = String(t || "").toLowerCase().replace(/\s/g, "");
+    if (!t) return 0;
+    var m = t.match(/^(\d+(?:[.,]\d+)*)(k|ming)?$/);
+    if (!m) return NaN;
+    var n = m[2] ? parseFloat(m[1].replace(",", ".")) * 1000 : Number(m[1].replace(/[.,]/g, ""));
+    return Math.round(n);
   }
   function store(key, val) {
     try {
@@ -113,6 +125,12 @@
         '    <button class="btn secondary grow" type="button" data-pay="naqd">💵 Naqd</button>' +
         '    <button class="btn secondary grow" type="button" data-pay="karta">💳 Karta</button>' +
         '  </div>' +
+        '  <div id="svCash" class="sv-cash" style="display:none">' +  // v15: 💵 Qaytim
+        '    <div class="row"><span class="sv-cash-l">💵 Berdi:</span>' +
+        '      <input id="svGiven" class="field grow" inputmode="numeric" autocomplete="off" placeholder="xaridor bergan pul"></div>' +
+        '    <div id="svQuick" class="tv-chips sv-quick"></div>' +
+        '    <div id="svChange" class="sv-change"></div>' +
+        '  </div>' +
         '  <button id="sellBtn" class="btn block sv-sell" type="button" disabled>✅ Sotildi</button>' +
         '  <button id="clearBtn" class="btn secondary block small" type="button" style="margin-top:8px">🗑 Savatni tozalash</button>' +
         '</div>';
@@ -136,6 +154,46 @@
       var sending = false;
       var pendingN = null;      // v14: API sotuvning takrorlanmas kodi (savat o'zgarmaguncha o'sha kod)
       var doneEl = el.querySelector("#svDone");
+      // v15: 💵 Qaytim
+      var cashEl = el.querySelector("#svCash"), givenEl = el.querySelector("#svGiven");
+      var quickEl = el.querySelector("#svQuick"), changeEl = el.querySelector("#svChange");
+      var quickKey = "";
+      function given() { return parseMoney(givenEl.value); }
+      // Tez tugmalar: jamidan katta eng yaqin yaxlit summalar (5 000 / 10 000 / 50 000 / 100 000 ga)
+      function quickList(sum) {
+        var out = [], seen = {};
+        [5000, 10000, 50000, 100000, 200000].forEach(function (st) {
+          var v = Math.ceil(sum / st) * st;
+          if (v < sum || v === 0) v += st;
+          if (v > sum && !seen[v] && out.length < 4) { seen[v] = 1; out.push(v); }
+        });
+        return out.sort(function (a, b) { return a - b; });
+      }
+      function drawChange() {
+        var sum = total(), show = pay === "naqd" && cart.length > 0;
+        cashEl.style.display = show ? "block" : "none";
+        if (!show) return;
+        var q = quickList(sum), k = q.join(",");
+        if (k !== quickKey) { // qayta chizish faqat jami o'zgarganda (bosish tugmasi yo'qolib qolmasin)
+          quickKey = k;
+          quickEl.innerHTML = '<button class="tv-chip" type="button" data-g="' + sum + '">Aniq</button>' +
+            q.map(function (v) { return '<button class="tv-chip" type="button" data-g="' + v + '">' + money(v) + "</button>"; }).join("");
+        }
+        var g = given();
+        if (!givenEl.value.trim()) changeEl.innerHTML = '<span class="muted small">Bersa - qaytim shu yerda chiqadi</span>';
+        else if (!isFinite(g)) changeEl.innerHTML = '<span class="err">⚠️ Raqam yozing</span>';
+        else if (g < sum) changeEl.innerHTML = '<span class="err">⚠️ Yetmaydi: <b>' + money(sum - g) + "</b> so'm</span>";
+        else changeEl.innerHTML = "🔄 Qaytim: <b class=\"sv-change-v\">" + money(g - sum) + "</b> so'm";
+      }
+      function berdi() { var g = given(); return pay === "naqd" && isFinite(g) && g >= total() && g > 0 ? g : 0; }
+      givenEl.addEventListener("input", drawChange); // takrorlanmas kod o'zgarmaydi - qayta yuborilsa ikki marta yozilmasin
+      quickEl.addEventListener("click", function (e) {
+        var b = e.target.closest("[data-g]");
+        if (!b) return;
+        givenEl.value = money(+b.getAttribute("data-g"));
+        drawChange();
+        App.haptic("success");
+      });
 
       // ----- narxlar -----
       function applyPrices(data) {
@@ -233,6 +291,7 @@
         sellBtn.textContent = sending ? "⏳ Yozilyapti..." : !cart.length ? "✅ Sotildi" : !pay ? "To'lov turini tanlang" : "✅ Sotildi - " + money(total()) + " so'm";
         var last = store(K_LAST);
         restoreBtn.style.display = !cart.length && last && last.length ? "block" : "none";
+        drawChange(); // v15
       }
 
       function addCode(code) {
@@ -348,6 +407,7 @@
         if (sumEl) sumEl.textContent = money(Math.round(c.price * c.qty));
         totalEl.textContent = money(total());
         if (pay) sellBtn.textContent = "✅ Sotildi - " + money(total()) + " so'm";
+        drawChange(); // v15
       });
       listEl.addEventListener("change", function (e) {
         if (!e.target.hasAttribute("data-q")) return;
@@ -371,6 +431,7 @@
         store(K_LAST, cart);
         cart = [];
         pay = "";
+        givenEl.value = ""; // v15
         save();
         draw();
         setStatus("Savat tozalandi. Kerak bo'lsa ↩️ tiklash mumkin.");
@@ -394,6 +455,8 @@
           h += '<div class="hs-row"><span class="hs-n">' + App.esc(x.n) + " × " + fmtQty(x.q) + (x.u === "kg" ? " kg" : "") +
             '</span><span class="hs-s">' + money(x.s) + "</span></div>";
         });
+        if (r.qaytim !== null && r.qaytim !== undefined) // v15
+          h += '<div class="sv-done-q">💵 Berdi: ' + money(r.berdi) + ' · 🔄 Qaytim: <b>' + money(r.qaytim) + "</b> so'm</div>";
         if (r.changed) h += '<p class="err small">⚠️ Ba\'zi narxlar jadvalda o\'zgargan - jami jadvaldagi narx bo\'yicha.</p>';
         if (r.missing && r.missing.length) h += '<p class="err small">⚠️ Yozilmadi (jadvalda yo\'q / narxi yo\'q): ' + App.esc(r.missing.join(", ")) + "</p>";
         if (r.low && r.low.length) h += '<p class="small">' + r.low.map(App.esc).join("<br>") + "</p>";
@@ -406,6 +469,7 @@
         if (!pendingN) pendingN = nonce();
         var sum = total(), p = pay;
         var body = { t: p, n: pendingN, s: sum, i: cart.map(function (c) { return c.bc ? [c.bc, c.qty] : ["", c.qty, c.name]; }) };
+        var bb = berdi(); if (bb) body.b = bb; // v15: 💵 Qaytim chekda
         sending = true;
         draw();
         setStatus("⏳ Sotuv yozilyapti...");
@@ -414,7 +478,7 @@
           r = r || {};
           if (r.ok) {
             // Sotuv yozildi - savat o'chadi (oyna yopilgan bo'lsa ham, qayta sotilmasin)
-            cart = []; pay = ""; pendingN = null;
+            cart = []; pay = ""; pendingN = null; givenEl.value = ""; // v15
             store(K_CART, null); store(K_LAST, null);
             if (!el.isConnected) return;
             showDone(r, sum, p);
@@ -443,6 +507,7 @@
           a: "sotuv", t: pay, n: nonce(), s: total(),
           i: cart.map(function (c) { return c.bc ? [c.bc, c.qty] : ["", c.qty, c.name]; })
         };
+        var bb = berdi(); if (bb) payload.b = bb; // v15: 💵 Qaytim chekda
         var json = JSON.stringify(payload);
         if (new Blob([json]).size > MAX_BYTES) {
           setStatus("⚠️ Savat juda katta (" + cart.length + " xil). Ikkita chekka bo'lib soting.", "err");

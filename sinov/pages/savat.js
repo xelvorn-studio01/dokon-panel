@@ -310,6 +310,20 @@
         save();
         draw();
       });
+      // v9: yozish davomida summa darrov yangilanadi (ro'yxat qayta chizilmaydi - klaviatura yopilmasin)
+      listEl.addEventListener("input", function (e) {
+        if (!e.target.hasAttribute("data-q")) return;
+        var c = cart[+e.target.getAttribute("data-q")];
+        if (!c) return;
+        var q = c.kg ? parseKg(e.target.value) : Math.floor(Number(String(e.target.value).replace(/\D/g, "")));
+        if (!(isFinite(q) && q > 0 && q <= 9999 && (c.kg || q >= 1))) return;
+        c.qty = q;
+        save();
+        var sumEl = e.target.parentNode.querySelector(".sv-isum");
+        if (sumEl) sumEl.textContent = money(Math.round(c.price * c.qty));
+        totalEl.textContent = money(total());
+        if (pay) sellBtn.textContent = "✅ Sotildi - " + money(total()) + " so'm";
+      });
       listEl.addEventListener("change", function (e) {
         if (!e.target.hasAttribute("data-q")) return;
         var i = +e.target.getAttribute("data-q");

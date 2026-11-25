@@ -181,3 +181,70 @@ details summary { cursor: pointer; }
 .sv-change { font-size: 18px; min-height: 26px; }
 .sv-change-v { font-size: 22px; color: var(--ok); }
 .sv-done-q { margin-top: 6px; font-size: 17px; }
+
+/* v17: 🎨 Dizayn - A (toza), B (katta raqam), C (ilova). body.dz-a / dz-b / dz-c - panel qo'yadi.
+   A - Telegram rangi; B - yashil; C - binafsha. Ichki bo'limlardagi tugmalar ham shu rangda. */
+body.dz-b { --btn: #1d9e75; --btn-text: #ffffff; }
+body.dz-c { --btn: #534ab7; --btn-text: #ffffff; }
+body.dz-b .tv-chip.sel, body.dz-c .tv-chip.sel { background: var(--btn); color: var(--btn-text); border-color: var(--btn); }
+
+/* Ikonka fonlari (kunduz va tunda ham ko'rinadi) */
+.t-yashil   { background: rgba(29,158,117,.16); }
+.t-kok      { background: rgba(55,138,221,.16); }
+.t-sariq    { background: rgba(239,159,39,.18); }
+.t-binafsha { background: rgba(127,119,221,.18); }
+.t-qizil    { background: rgba(226,75,74,.16); }
+.t-kulrang  { background: rgba(128,128,128,.16); }
+
+.pn-dz { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 12px 0 4px; font-size: 14px; color: var(--hint); }
+.pn-dz .tv-chip { min-width: 40px; }
+
+/* A - toza */
+.a-hero { margin-bottom: 10px; padding: 14px; }
+.a-hero .lbl { font-size: 13px; color: var(--hint); }
+.a-big { font-size: 28px; font-weight: 700; margin: 2px 0; }
+.a-menu a { text-align: left; padding: 14px 12px; border: 1px solid rgba(128,128,128,.12); }
+.a-menu a .ico { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px;
+                 border-radius: 12px; font-size: 22px; margin-bottom: 10px; }
+.a-t { display: block; }
+
+/* B - katta raqam */
+.b-top { background: var(--btn); color: var(--btn-text); border-radius: 16px; padding: 18px 16px; margin-bottom: 6px; }
+.b-shop { font-size: 14px; opacity: .85; }
+.b-big { font-size: 36px; font-weight: 800; letter-spacing: .5px; line-height: 1.15; margin-top: 4px; }
+.b-sub { font-size: 14px; opacity: .85; }
+.b-who { margin: 0 4px 10px; }
+.b-rows { padding: 4px 12px; margin-bottom: 12px; }
+.b-row { display: flex; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px solid rgba(128,128,128,.15); }
+.b-row:last-child { border-bottom: 0; }
+.b-row[data-sec] { cursor: pointer; }
+.b-sell { font-size: 19px; font-weight: 700; padding: 16px; border-radius: 14px; margin-bottom: 14px; }
+.b-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px 6px; }
+.b-grid a { display: flex; flex-direction: column; align-items: center; gap: 5px; text-decoration: none;
+            color: var(--text); font-size: 12px; text-align: center; line-height: 1.2; }
+.b-grid a.off { opacity: .45; pointer-events: none; }
+.b-grid .soon { font-size: 10px; color: var(--hint); }
+.b-ico { display: flex; align-items: center; justify-content: center; width: 52px; height: 52px;
+         border-radius: 16px; font-size: 24px; }
+
+/* C - ilova (pastki menyu) */
+.pn-c { padding-bottom: 72px; }
+.c-hi { color: var(--hint); font-size: 14px; }
+.c-shop { margin-bottom: 12px; }
+.c-cap { font-size: 13px; color: var(--hint); margin: 4px 4px 6px; }
+.c-list { padding: 2px 12px; margin-bottom: 14px; }
+.c-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; text-decoration: none; color: var(--text);
+         border-bottom: 1px solid rgba(128,128,128,.15); }
+.c-row:last-child { border-bottom: 0; }
+.c-row.off { opacity: .45; pointer-events: none; }
+.c-row .soon { display: inline; margin-left: 6px; font-size: 12px; color: var(--hint); }
+.c-ri { display: flex; align-items: center; justify-content: center; flex: 0 0 34px; height: 34px; border-radius: 10px; font-size: 18px; }
+.c-row .grow { flex: 1; min-width: 0; }
+.c-chev { color: var(--hint); font-size: 22px; line-height: 1; }
+.c-who { text-align: center; margin-top: 4px; }
+.c-nav { position: fixed; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr);
+         background: var(--bg); border-top: 1px solid rgba(128,128,128,.2); padding: 6px 0 calc(6px + env(safe-area-inset-bottom)); z-index: 5; }
+.c-nav a { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; color: var(--hint); text-decoration: none; }
+.c-nav a span { font-size: 20px; }
+.c-nav a.sel { color: var(--btn); font-weight: 600; }
+.c-nav a.off { opacity: .45; pointer-events: none; }

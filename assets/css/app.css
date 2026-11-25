@@ -60,3 +60,11 @@ input.field { width: 100%; font-size: 17px; padding: 10px; border: 1px solid #cc
 .sv-pay { margin-bottom: 10px; }
 .sv-sell { font-size: 18px; padding: 14px; }
 .sv-sell:disabled { opacity: .5; }
+
+/* v9: 🔍 nom bo'yicha qidiruv natijalari */
+.sv-hits { display: flex; flex-direction: column; gap: 4px; }
+.sv-hit { display: flex; justify-content: space-between; align-items: center; gap: 8px; width: 100%;
+          text-align: left; font-size: 16px; padding: 10px 12px; border: 0; border-radius: 8px;
+          background: var(--card); color: var(--text); cursor: pointer; }
+.sv-hit b { white-space: nowrap; }
+.sv-nohit { margin: 2px 4px; }

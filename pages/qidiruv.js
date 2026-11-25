@@ -97,7 +97,7 @@
     }
     el.innerHTML = '<h1>🔍 Qidiruv</h1>' +
       '<form class="row qd-form" id="qd-form" autocomplete="off">' +
-      '  <input class="field grow" id="qd-q" type="search" enterkeyhint="search" placeholder="Nomi yoki shtrix kod">' +
+      '  <input class="field grow" id="qd-q" type="search" enterkeyhint="search" placeholder="Nomi yoki shtrix kod (xato bo\'lsa ham)">' +
       '  <button class="btn" id="qd-go" type="submit">🔍</button>' +
       "</form>" +
       '<div id="qd-out"></div>';

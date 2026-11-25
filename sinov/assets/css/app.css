@@ -103,3 +103,6 @@ select.field { font-size: 15px; padding: 8px; }
 .im-bar .row { margin-top: 6px; }
 .im-res { line-height: 1.5; }
 details summary { cursor: pointer; }
+/* v12: kartochka ichidagi ikkinchi darajali tugmalar fon bilan qo'shilib ketmasin */
+.card .btn.secondary { background: var(--bg); border: 1px solid rgba(128,128,128,.25); }
+.card .btn.sel { background: var(--btn); color: var(--btn-text); border-color: var(--btn); }
